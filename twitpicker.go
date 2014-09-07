@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"./twitpic"
 )
 
 func main() {
@@ -15,31 +17,35 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("%s\n", body)
+	//fmt.Printf("%s\n", body)
+
+	photos := twitpic.DecodePhotos(body)
+
+	fmt.Printf("%+v\n", photos)
 }
 
-func getHTTP(url string) ([]byte, error) {
+func getHTTP(url string) (string, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	req.Header.Add("User-Agent", "Mozilla/5.0")
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return body, nil
+	return string(body[:]), nil
 }
