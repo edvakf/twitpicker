@@ -25,6 +25,7 @@ images: [
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -53,14 +54,29 @@ func (img Image) ToURL() string {
 }
 
 func (img Image) Download() error {
-	log.Println(">> starting download")
+	log.Println(">> starting download ", img.ShortID)
 
-	resp, err := http.Get(img.ToURL())
+	var resp *http.Response
+	var err error
 
-	if err != nil {
-		return err
+	numRetry := 3
+
+	for i := 0; i < numRetry; i++ {
+		resp, err = http.Get(img.ToURL())
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != 200 {
+			log.Println("bad http status ", resp.StatusCode)
+			resp.Body.Close()
+			if i == numRetry - 1 {
+				return errors.New("maxium number of retry reached")
+			}
+			continue
+		}
+		defer resp.Body.Close()
+		break
 	}
-	defer resp.Body.Close()
 
 	name := img.ShortID + "." + img.Type
 	f, err := os.Create(name)
