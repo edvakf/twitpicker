@@ -21,7 +21,12 @@ func main() {
 
 	photos := twitpic.DecodePhotos(body)
 
-	fmt.Printf("%+v\n", photos)
+	//fmt.Printf("%+v\n", photos)
+
+	for i := 0; i < len(photos.Images); i++ {
+		//fmt.Printf("%s\n", photos.Images[i].ShortID)
+		fmt.Printf("%s\n", photos.Images[i].ToURL())
+	}
 }
 
 func getHTTP(url string) (string, error) {
