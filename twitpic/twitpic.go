@@ -25,8 +25,10 @@ images: [
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -58,15 +60,25 @@ func (img image) Download() error {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	name := img.ShortID + "." + img.Type
+	f, err := os.Create(name)
+
 	if err != nil {
 		return err
 	}
 
-	name := img.ShortID + "." + img.Type
-	err = ioutil.WriteFile(name, data, 0666)
+	written, err := io.Copy(f, resp.Body)
+
 	if err != nil {
 		return err
+	}
+
+	fmt.Fprintf(os.Stderr, "%d bytes written to %s\n", written, name)
+
+	if resp.ContentLength > 0 && resp.ContentLength != written {
+		fmt.Fprintf(
+			os.Stderr, "content-length (%d) does not match the file size (%d)\n",
+			resp.ContentLength, written)
 	}
 
 	return nil
