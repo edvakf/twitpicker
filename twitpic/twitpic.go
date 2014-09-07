@@ -25,34 +25,36 @@ images: [
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 )
 
-type image struct {
+type Image struct {
 	ShortID string `json:"short_id"`
 	Type    string `json:"type"`
 }
 
-type photos struct {
-	Images []image
+type Photos struct {
+	Images []Image
 }
 
-func DecodePhotos(phJson string) photos {
+func DecodePhotos(phJson string) Photos {
 	dec := json.NewDecoder(strings.NewReader(phJson))
-	var p photos
+	var p Photos
 	dec.Decode(&p)
 	return p
 }
 
-func (img image) ToURL() string {
+func (img Image) ToURL() string {
 	return "http://twitpic.com/show/large/" + img.ShortID
 }
 
-func (img image) Download() error {
+func (img Image) Download() error {
+	log.Println(">> starting download")
+
 	resp, err := http.Get(img.ToURL())
 
 	if err != nil {
@@ -73,13 +75,14 @@ func (img image) Download() error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "%d bytes written to %s\n", written, name)
+	log.Printf("%d bytes written to %s\n", written, name)
 
 	if resp.ContentLength > 0 && resp.ContentLength != written {
-		fmt.Fprintf(
-			os.Stderr, "content-length (%d) does not match the file size (%d)\n",
+		log.Printf(
+			"content-length (%d) does not match the file size (%d)\n",
 			resp.ContentLength, written)
 	}
 
+	log.Printf("<< saved file %s\n", name)
 	return nil
 }

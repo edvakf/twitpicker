@@ -5,9 +5,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 
 	"./twitpic"
 )
+
+var numDownloads = 4
 
 func main() {
 	body, err := getHTTP("http://twitpic.com/photos/harukasan.json")
@@ -23,15 +26,33 @@ func main() {
 
 	//fmt.Printf("%+v\n", photos)
 
-	for i := 0; i < len(photos.Images); i++ {
-		//fmt.Printf("%s\n", photos.Images[i].ShortID)
-		//fmt.Printf("%s\n", photos.Images[i].ToURL())
-		err := photos.Images[i].Download()
-		if err != nil {
-			fmt.Printf("error: %s\n", err.Error())
-			os.Exit(1)
-		}
+	downloadImages(photos)
+}
+
+func downloadImages(photos twitpic.Photos) {
+	chs := make(chan twitpic.Image, len(photos.Images))
+
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	for n := 0; n < numDownloads; n++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for img := range chs {
+				err := img.Download()
+				if err != nil {
+					fmt.Printf("error: %s\n", err.Error())
+					os.Exit(1)
+				}
+			}
+		}()
 	}
+
+	for _, img := range photos.Images {
+		chs <- img
+	}
+	close(chs)
 }
 
 func getHTTP(url string) (string, error) {
