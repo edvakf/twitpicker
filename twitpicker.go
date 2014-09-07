@@ -25,7 +25,12 @@ func main() {
 
 	for i := 0; i < len(photos.Images); i++ {
 		//fmt.Printf("%s\n", photos.Images[i].ShortID)
-		fmt.Printf("%s\n", photos.Images[i].ToURL())
+		//fmt.Printf("%s\n", photos.Images[i].ToURL())
+		err := photos.Images[i].Download()
+		if err != nil {
+			fmt.Printf("error: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 }
 

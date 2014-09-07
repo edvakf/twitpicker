@@ -25,6 +25,8 @@ images: [
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -46,4 +48,26 @@ func DecodePhotos(phJson string) photos {
 
 func (img image) ToURL() string {
 	return "http://twitpic.com/show/large/" + img.ShortID
+}
+
+func (img image) Download() error {
+	resp, err := http.Get(img.ToURL())
+
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	name := img.ShortID + "." + img.Type
+	err = ioutil.WriteFile(name, data, 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
