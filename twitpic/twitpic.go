@@ -60,7 +60,6 @@ func (img Image) Download() error {
 	var err error
 
 	numRetry := 3
-
 	for i := 0; i < numRetry; i++ {
 		resp, err = http.Get(img.ToURL())
 		if err != nil {
@@ -69,7 +68,7 @@ func (img Image) Download() error {
 		if resp.StatusCode != 200 {
 			log.Println("bad http status ", resp.StatusCode)
 			resp.Body.Close()
-			if i == numRetry - 1 {
+			if i == numRetry-1 {
 				return errors.New("maxium number of retry reached")
 			}
 			continue
@@ -91,14 +90,6 @@ func (img Image) Download() error {
 		return err
 	}
 
-	log.Printf("%d bytes written to %s\n", written, name)
-
-	if resp.ContentLength > 0 && resp.ContentLength != written {
-		log.Printf(
-			"content-length (%d) does not match the file size (%d)\n",
-			resp.ContentLength, written)
-	}
-
-	log.Printf("<< saved file %s\n", name)
+	log.Printf("<< saved file %s (%d bytes)\n", name, written)
 	return nil
 }
