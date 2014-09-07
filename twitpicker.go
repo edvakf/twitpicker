@@ -10,7 +10,7 @@ import (
 	"./twitpic"
 )
 
-var numDownloads = 4
+var numDownloads = 2
 
 func main() {
 	body, err := getHTTP("http://twitpic.com/photos/harukasan.json")
