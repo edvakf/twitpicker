@@ -24,7 +24,7 @@ func main() {
 
 	photos := twitpic.DecodePhotos(body)
 
-	//fmt.Printf("%+v\n", photos)
+	fmt.Printf("%+v\n", photos)
 
 	downloadImages(photos)
 }
@@ -55,28 +55,28 @@ func downloadImages(photos twitpic.Photos) {
 	close(chs)
 }
 
-func getHTTP(url string) (string, error) {
+func getHTTP(url string) ([]byte, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req.Header.Add("User-Agent", "Mozilla/5.0")
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(body[:]), nil
+	return body, nil
 }

@@ -30,7 +30,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type Image struct {
@@ -42,10 +41,9 @@ type Photos struct {
 	Images []Image
 }
 
-func DecodePhotos(phJson string) Photos {
-	dec := json.NewDecoder(strings.NewReader(phJson))
+func DecodePhotos(phJson []byte) Photos {
 	var p Photos
-	dec.Decode(&p)
+	json.Unmarshal(phJson, &p)
 	return p
 }
 
