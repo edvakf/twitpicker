@@ -30,7 +30,7 @@ func main() {
 }
 
 func downloadImages(photos twitpic.Photos) {
-	chs := make(chan twitpic.Image, len(photos.Images))
+	ch := make(chan twitpic.Image, len(photos.Images))
 
 	var wg sync.WaitGroup
 	defer wg.Wait()
@@ -39,7 +39,7 @@ func downloadImages(photos twitpic.Photos) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for img := range chs {
+			for img := range ch {
 				err := img.Download()
 				if err != nil {
 					fmt.Printf("error: %s\n", err.Error())
@@ -50,9 +50,9 @@ func downloadImages(photos twitpic.Photos) {
 	}
 
 	for _, img := range photos.Images {
-		chs <- img
+		ch <- img
 	}
-	close(chs)
+	close(ch)
 }
 
 func getHTTP(url string) ([]byte, error) {
